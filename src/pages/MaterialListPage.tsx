@@ -6,10 +6,14 @@ import Loader from '../components/common/Loader';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { Container, Row, Col, Button, Form, Pagination } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
+import MaterialFormModal from "../components/MaterialFormModal.tsx";
 
 const MaterialListPage: React.FC = () => {
     const { authUser } = useAuth();
     const queryClient = useQueryClient();
+
+    const [showCreateEditModal, setShowCreateEditModal] = useState(false);
+    const [editingMaterialId, setEditingMaterialId] = useState<number | null>(null);
 
     const [currentPage, setCurrentPage] = useState(0);
     const [topicFilter, setTopicFilter] = useState('');
@@ -43,14 +47,18 @@ const MaterialListPage: React.FC = () => {
     };
 
     const handleOpenCreateModal = () => {
-        // setEditingMaterialId(null);
-        // setShowCreateEditModal(true);
+        setEditingMaterialId(null);
+        setShowCreateEditModal(true);
     };
 
     const handleOpenEditModal = (id: number) => {
-        console.log(`Editing material ${id}...`);
-        // setEditingMaterialId(id);
-        // setShowCreateEditModal(true);
+        setEditingMaterialId(id);
+        setShowCreateEditModal(true);
+    };
+
+    const handleModalClose = () => {
+        setShowCreateEditModal(false);
+        setEditingMaterialId(null); // Important to reset
     };
 
     const handleFilterSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
@@ -92,12 +100,6 @@ const MaterialListPage: React.FC = () => {
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={2}>
-                        <Button type="submit" variant="info" className="w-100">Apply Filters</Button>
-                    </Col>
-                    <Col md={2}>
-                        <Button type="button" variant="outline-secondary" className="w-100" onClick={() => { setTopicFilter(''); setCurrentPage(0);}}>Clear Filters</Button>
-                    </Col>
                 </Row>
             </Form>
 
@@ -128,6 +130,14 @@ const MaterialListPage: React.FC = () => {
                     ))}
                     <Pagination.Next onClick={() => setCurrentPage(old => (data && !data.last ? old + 1 : old))} disabled={data?.last || isPlaceholderData} />
                 </Pagination>
+            )}
+
+            {showCreateEditModal && ( // Conditionally render modal to ensure fresh state/fetch on open
+                <MaterialFormModal
+                    show={showCreateEditModal}
+                    onHide={handleModalClose}
+                    materialIdToEdit={editingMaterialId}
+                />
             )}
         </Container>
     );
